@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta http-equiv="X-UA-Compatible" content="IE=edge">
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, height=device-height, initial-scale=1.0, user-scalable=no, user-scalable=0"/>
+		<meta name="mobile-web-app-capable" content="yes">
+		<title>Infor SCE Mobile Web Client</title>
+		<link href="../../../svc_wm/app/css/InforUX/inforControlsCombined.min.css" rel="stylesheet">
+		<link href="../../../svc_wm/app/css/mobile-web-client/inforMetaFramework.css" rel="stylesheet">
+		<script src="../../../svc_wm/app/js/InforUX/jquery-1.10.2.min.js?v=11.0.0000"></script>
+		<script src="../../../svc_wm/app/js/InforUX/jquery-ui-1.10.2.custom.min.js?v=11.0.0000"></script>
+		<script src="../../../svc_wm/app/js/InforUX/inforControlsCombined.min.js?v=11.0.0000"></script>		
+		<script src="../../../svc_wm/app/js/mobile-web-client/queue.js?v=11.0.0000"></script>
+		<script src="../../../svc_wm/app/js/mobile-web-client/inforUtilities.js?v=11.0.0000"></script>
+		<script src="../../../svc_wm/app/js/mobile-web-client/inforDate.js?v=11.0.0000"></script>
+		<script src="../../../svc_wm/app/js/mobile-web-client/inforMetaWidget.js?v=11.0.0000"></script>
+		<script src="../../../svc_wm/app/js/mobile-web-client/inforMetaExpression.js?v=11.0.0000"></script>
+		<script src="../../../svc_wm/app/js/mobile-web-client/inforMetaWS.js?v=11.0.0000"></script>
+		<script src="../../../svc_wm/app/js/mobile-web-client/inforMetaScreen.js?v=11.0.0000"></script>
+		<script src="../../../svc_wm/app/js/mobile-web-client/inforMetaScreenController.js?v=11.0.0000"></script>		
+		<script src="../../../svc_wm/app/js/mobile-web-client/inforMetaFramework.js?v=11.0.0000"></script> 
+		<script src="../../../svc_wm/app/js/mobile-web-client/inforUserMsg.js?v=11.0.0000"></script>
+		<script src="../../../svc_wm/app/js/mobile-web-client/inforBarcode.js?v=11.0.0000"></script>
+		<script>
+			var inforMetaClientVersion = '11.0.0000'
+		</script>
+	</head>
+
+	<body style="width: 100%; height: 100%; margin: 0; padding: 0;">
+		<div class="inforModuleContainer">	
+			<div id="login" style="display: none;">
+				<div id="loginHeader" class="SCE-Meta-LayoutHeader inforColor lightGraphite" style="width: 100%; height: 26px;">
+					<label id="header" style="top: 3px; left: 20px; background: transparent; " class="inforLabel noColon SCE-Meta-LayoutWidget label"></label> 
+				</div>
+				
+				<label id="serverLabel" style="top: 40px; left: 20px;" for="server" class="inforLabel SCE-Meta-LayoutWidget label"></label> 
+				<input tabindex="3" style="top: 40px; left: 90px; width:60%;" id="server" class="inforTextbox SCE-Meta-LayoutWidget" value="">
+				<label id="portLabel" style="top: 65px; left: 20px;" for="port" class="inforLabel SCE-Meta-LayoutWidget label"></label>
+				<input tabindex="4" style="top: 65px; left: 90px;width:60%;" id="port" class="inforTextbox SCE-Meta-LayoutWidget" value="">
+				<label id="userLabel" style="top: 90px; left: 20px;" for="user" class="inforLabel SCE-Meta-LayoutWidget label"></label> 
+				<input tabindex="5" style="top: 90px; left: 90px;width:60%;" id="user" class="inforTextbox SCE-Meta-LayoutWidget" autocapitalize="off" autocorrect="off" spellcheck="false" autocomplete="off">
+				<label id="passwordLabel" style="top: 115px; left: 20px;" for="password" class="inforLabel SCE-Meta-LayoutWidget label"></label> 
+				<input tabindex="6" style="top: 115px; left: 90px;width:60%;" id='password' type="password" class="inforTextbox SCE-Meta-LayoutWidget" autocapitalize="off" autocorrect="off" spellcheck="false" autocomplete="off">
+			</div>
+	
+			<div id="layoutContent" style="height: 100%; display: none; position:absolute;">
+				<div id="headerDIV" class="SCE-Meta-LayoutHeader inforColor lightGraphite" style="height: 26px;">
+					<button type="button" class="SCE-Meta-IconMenu" onClick="menuDIV.inforOpen();" style="z-index:1901; background-color: #b3b3b3!important;"></button>
+					<button type="button" id="prevScreenButton" class="inforIconButton previous SCE-Meta-HeaderIcon" onClick="prevScreen();" style="display:none; top: 0px; right: 48px;">
+						<span></span>
+					</button>
+					<button type="button" id="nextScreenButton" class="inforIconButton next SCE-Meta-HeaderIcon" onClick="nextScreen();" style="display:none; top: 0px; right: 24px;">
+						<span></span>
+					</button>
+					<button type="button" id="messageAlert" class="inforIconButton translate SCE-Meta-HeaderIcon" onClick="msgDlg.inforOpen({prePostProcess: true});" style="top: 0px; right: 0px;">
+						<span></span>
+					</button>									
+				</div>
+				<div id="layoutDIV" style="height: 85%; position:absolute; overflow-x: hidden; overflow-y: auto;">
+				</div>					
+				
+				<div id="selectorDIV" style="height: 85%; display: none; position:absolute;">
+					<div id="selectorToolbarArea" style="position:absolute; top:0px; left:10px; width: 49%;">
+						<div style="position:absolute; left: 0px;">
+							<label id="recnumLabel" class="inforLabel noColon SCE-Meta-LayoutRowCell SCE-Meta-LayoutWidget" style="width:auto;"></label>
+							<label id="recnum" class="inforLabel noColon SCE-Meta-LayoutRowCell SCE-Meta-LayoutWidget" style="width:auto;">1</label>
+							<label id="rectotLabel" class="inforLabel noColon SCE-Meta-LayoutRowCell SCE-Meta-LayoutWidget" style="width:auto;"></label>
+							<label id="rectot" class="inforLabel noColon SCE-Meta-LayoutRowCell SCE-Meta-LayoutWidget" style="width:auto;">0</label>						
+						</div>
+						<div style="position:absolute; right:0px;">						
+							<button id="upSelectorRow" class="inforIconButton up" onclick="currentScreen.moveSelectorRow(0);"><span style="width:16px;height:16px;"></span></button>
+							<button id="downSelectorRow" class="inforIconButton down" onclick="currentScreen.moveSelectorRow(1);"><span style="width:16px;height:16px;"></span></button>
+							<button id="closeSelectorDetail" class="inforIconButton close" onclick="currentScreen.closeSelectorDetail();"><span style="width:16px;height:16px;"></span></button>
+						</div>
+					</div>
+				
+					<div id="selectorContent" style="height: 95%; width:95%; position:absolute; top: 20px; float: none; overflow-y: auto; overflow-x: hidden;">
+					</div>
+					<div id="selectorDetail" class="SelectorContentDetail" style="z-index:0; display:none; height: 90%; width:90%; position: absolute; top: 20px; float: none; overflow-y: auto; overflow-x: hidden;">
+					</div>
+				</div>					
+				
+				<div id="footerDIV" class="SCE-Meta-LayoutFooter inforColor lightGraphite" style="height: 10%; min-height:20px; max-height: 25px;"></div>			
+				<div id="specialKeysTablet" class="SCE-Meta-LayoutFooter" style="position:absolute; bottom: 4px; left: 0px; display: none; z-index: 1999; min-height:20px; max-height: 35px; width:85%;">
+					<button id="aboutKeyButton" type="button" class="inforFormButton SCE-Meta-FunctionKeyButton" onclick="currentScreen.displayAboutDialog();" style="position:absolute;left:0px;width:50px;"> 
+						<div id="aboutKeyDIV" class="SCE-Meta-AboutKey">F1</div><BR>
+						<div id="screenCodeDIV" class="SCE-Meta-ScreenCode"></div>
+					</button>
+					<div id="fkeySlotDIV" style="position: absolute; width: auto; left: 52px; height: 22px;"></div>
+				</div>			
+			</div>
+		</div>
+		
+		<div id="userLookupDialog" class="SCE-Meta-Dialog" style="display: none;" >
+			<div class="inforDialogTitleBar" style="height: 25px;">
+				<div class="caption" id="captionID" style="top: 3px;"></div>
+				<button type="button" class="inforCloseButton" title="" aria-label="Close" style="top: -19px;"><i>close</i></button>
+			</div>
+			<div style="margin:10px;">				
+				<input class="inforSearchField" type="text" id="userSearch" placeholder="Search">
+			</div>
+			<div class="inforDialogContent" style="overflow: scroll; border-top: 1px solid black;">
+			</div>
+		</div>
+		
+		<div id="itemImgDialog" class='SCE-Meta-Dialog' style="display: none;" >
+			<div class="inforDialogTitleBar" style="height: 25px;">			
+				<div class="caption" id="captionID" style="top: 3px;"></div>
+				<button type="button" class="inforCloseButton" title="" aria-label="Close" style="top: -19px;"><i>close</i></button>
+			</div>
+			<div class="inforDialogContent" style="overflow: scroll;">
+				<img alt="" src="#">
+			</div>
+		</div>
+		
+		<div id="messagesDialog" class='SCE-Meta-Dialog' style="display: none;" >
+			<div class="inforDialogTitleBar" style="height: 25px;">			
+				<div class="caption" id="captionID" style="top: 3px;"></div>
+				<button type="button" class="inforCloseButton" title="" aria-label="Close" style="top: -19px;"><i>close</i></button>
+			</div>
+			<div class="inforDialogContent" style="overflow: scroll;">
+			</div>
+			<div class="dialogButtonBar" style="height:25px; text-align:center;">			
+				<button id="newReceipent" class="inforIconButton comment"><span></span></button>
+			</div>
+		</div>
+
+		<div id="menuDialog" class='SCE-Meta-Dialog' style="display:none;" >
+			<div class="inforDialogTitleBar" style="height: 25px;">			
+				<div class="caption" id="captionID" style="top: 3px;"></div>
+				<button type="button" class="inforCloseButton" title="" aria-label="Close" style="top: -19px;" onclick="menuDIV.inforClose();"><i>close</i></button>
+			</div>
+			<div class="inforDialogContent" style="width:100%">
+				<button id="homeButton" tabindex="0" type="button" class="inforTextButton SCE-Meta-LayoutMenu" style="top:30px; left:10%; width:80%;" onclick="navigateHomeMenu();">
+					<div class="SCE-Meta-LayoutMenuCircle" style="background-color:#ffd500">0</div><label></label>		
+				</button>
+				<div class="SCE-Meta-IconArrow" style="top: 31.5px;"></div>
+				<button id="imageUploadButton" tabindex="0" type="button" class="inforTextButton SCE-Meta-LayoutMenu" style="top:56px; left:10%; width:80%;" onclick="menuDIV.inforClose();openImageCapture();">
+					<div class="SCE-Meta-LayoutMenuCircle" style="background-color:#ffd500">1</div><label></label>
+				</button>
+				<div class="SCE-Meta-IconArrow" style="top: 57.5px;"></div>				
+			</div>
+		</div>
+		
+		<div id="conversationDialog" class='SCE-Meta-Dialog' style="display: none;">
+			<input id="hiddenConvID" value="-1" style="display:none;">
+			<input id="hiddenNewUser" value="" style="display:none;">
+			<input id="hiddenNewUserName" value="" style="display:none;">
+			<div class="inforDialogTitleBar" style="height: 25px;">			
+				<div class="caption" id="captionID" style="top: 3px;">Messages</div>
+				<button type="button" class="inforCloseButton" title="" aria-label="Close" style="top: -19px;"><i>close</i></button>
+			</div>
+			<div class="inforDialogContent" style="overflow-y: none; overflow-x:auto;">
+			</div>
+			<div class="dialogButtonBar" style="height:25px; text-align: center;">
+				<label class="inforLabel" id="daMsgLabel" for="daMsg" style="float:left;">Reply</label>		
+				<textarea id="daMsg" class="inforTextArea SCE-Meta-MsgText" style="position: relative; height:35px; width:80%; padding: 0px 0px 0px 0px; float:right;"></textarea>
+			</div>
+		</div>
+			
+		<div id="warehouseSelectDialog" class='SCE-Meta-Dialog' style="display: none;">
+			<div class="inforDialogTitleBar" style="height: 25px;">			
+				<div class="caption" id="captionID" style="top: 3px; text-indent: 2px; margin: 0px 0px 0px 5px; left: 0px;"></div>
+				<button type="button" class="inforCloseButton" title="" aria-label="Close" style="top: -19px;"><i>close</i></button>
+			</div>
+			<div id="warehouseDialogContent" class="inforDialogContent">
+			</div>
+		</div>
+
+		<div id="aboutDialog" class="SCE-Meta-Dialog" style="display: none;">
+			<div class="inforDialogTitleBar" style="height: 25px;">			
+				<div class="caption" id="captionID" style="top: 3px;"></div>
+				<button type="button" class="inforCloseButton" title="" aria-label="Close" style="top: -19px;"><i>close</i></button>
+			</div>
+			<div id="dialogContent" class="inforDialogContent">
+			</div>
+		</div>
+		
+		<div id="yesNoDialog" style="display: none; z-index: 9999;" tabindex="3000"></div>		
+				
+		<div id="errorDialog" style="display: none; z-index: 9999;" tabindex="3000"></div>		
+		
+		<div id="errorWarningDialog" class="SCE-Meta-Dialog" style="display: none; z-index: 9999; top:30%; left: 15%; width:70%;height:50%;" tabindex="3000">
+			<div style="height: 35px; margin: -7px 5px 35px; padding-left: 0; padding-top: 0; width: 100%; display: block;">
+				<div class="inforDialogTitleBar">
+					<div class="inforIcon alert"></div>
+					<div class="caption" id="captionID"  style="top: -15px;"></div>
+					<button type="button" class="inforCloseButton" title="" aria-label="Close" style="display: none;"><i>close</i></button>
+				</div>
+			</div>
+			<div id="dialogContent" style="font-size: 1.4em; margin: 10px 15px 15px; max-width: 550px;"></div>			
+			<div style="text-align:center;">
+				<button type="button" class="inforFormButton" id="acceptButton" style="margin-right: 6px; min-width:42px;"></button>				
+			</div>
+		</div>
+		
+		<div id="acceptDialog" class="SCE-Meta-Dialog" style="display: none; z-index: 9999; top:30%; left: 20%; width:59%;height:50%;" tabindex="3000">
+			<div style="height: 35px; margin: -7px 5px 35px; padding-left: 0; padding-top: 0; width: 100%; display: block;">
+				<div class="inforDialogTitleBar">
+					<div class="inforIcon info"></div>
+					<div class="caption" id="captionID"  style="top: -15px;"></div>
+					<button type="button" class="inforCloseButton" title="" aria-label="Close" style="display: none;"><i>close</i></button>
+				</div>
+			</div>
+			<div id="dialogContent" style="font-size: 1.4em; margin: 10px 35px 15px; max-width: 550px;"></div>			
+			<div style="text-align:center;">
+				<button type="button" class="inforFormButton" id="acceptButton" style="margin-right: 6px; min-width:42px;"></button>
+				<button type="button" class="inforFormButton" id="cancelButton" style="margin-right: 6px; min-width:42px;"></button>
+			</div>
+		</div>
+		
+	</body>
+</html>
+
