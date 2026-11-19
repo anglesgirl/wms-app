@@ -193,9 +193,9 @@ class MainActivity : Activity(), WmsProtocol.Listener {
         }
     }
 
-    override fun onDisconnected() {
+    override fun onDisconnected(reason: String?) {
         runOnUiThread {
-            showError("连接已断开，正在重连…")
+            showError("连接已断开，正在重连…" + if (!reason.isNullOrEmpty()) "\n$reason" else "")
         }
     }
 

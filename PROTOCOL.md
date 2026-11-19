@@ -120,7 +120,20 @@
   拣货二里加“查序列号”：按当前库位+物料调 SNL01，出列表多选，选完
   直接填回“库位/箱”格。
 
-## 6. 渲染规则（原生）
+## 6. 安卓 6.0 连接问题（2026-11-19 实测）
+
+- 原生版 v1.1-native（vc2）在捷宝 ST6750（Android 6.0、32 位）上连不上：
+  一直“正在连接 WMS 服务器…”→“连接已断开，正在重连…”。同一台机
+  WebView 版（AccessBrowser）正常。
+- 根因（待新版验证）：OkHttp 走系统 TLS 栈，Android 6.0 的老 TLS
+  握手不过这台服务器；WebView 用 Chromium 自带现代 TLS，所以能通。
+- 修法（v1.1.1-native，vc3）：①打包 Conscrypt（org.conscrypt:conscrypt-android:2.5.2，
+  支持 armeabi-v7a），启动时 `Security.insertProviderAt(Conscrypt.newProvider(), 1)`，
+  让 OkHttp 用现代 TLS 1.2/1.3；②WebSocket 握手加 `Origin: https://wms.pantum.com`
+  （与浏览器客户端一致）；③断线时把真实原因显示在屏上（原先只显示“正在重连”，
+  看不出是 TLS、证书还是超时）。
+
+## 7. 渲染规则（原生）
 
 - `HEADER` → 屏标题栏。
 - `SEND` + 类型 1 → 输入框（EditText）+ 标签；必填标 `*`；强制大写

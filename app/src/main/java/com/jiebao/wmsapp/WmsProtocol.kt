@@ -6,6 +6,8 @@ import okhttp3.Response
 import okhttp3.WebSocket
 import okhttp3.WebSocketListener
 import okio.ByteString
+import org.conscrypt.Conscrypt
+import java.security.Security
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.Executors
 import java.util.concurrent.ScheduledExecutorService
@@ -38,8 +40,10 @@ class WmsProtocol(private val listener: Listener) {
         /** WebSocket open and welcome JSON received; ready to send. */
         fun onReady()
 
-        /** Connection closed or failed (a reconnect is attempted automatically). */
-        fun onDisconnected()
+        /** Connection closed or failed (a reconnect is attempted automatically).
+         * [reason] is the underlying cause when known (shown on screen so the
+         * user can report it); null when the close was clean/unspecified. */
+        fun onDisconnected(reason: String?)
     }
 
     companion object {
@@ -52,6 +56,20 @@ class WmsProtocol(private val listener: Listener) {
     private val client: OkHttpClient = OkHttpClient.Builder()
         .pingInterval(0, TimeUnit.MILLISECONDS) // app-level PING/PONG, not OkHttp's
         .build()
+
+    init {
+        // Modern TLS on old Android: insert Conscrypt as the preferred security
+        // provider so OkHttp's default SSLSocketFactory negotiates with a
+        // current TLS 1.2/1.3 stack. On Android 6.0 the platform stack fails
+        // this server's handshake while the WebView (Chromium) succeeds.
+        // No-op if Conscrypt is already installed or unavailable.
+        try {
+            if (Security.getProvider(Conscrypt.PROVIDER_NAME) == null) {
+                Security.insertProviderAt(Conscrypt.newProvider(), 1)
+            }
+        } catch (_: Throwable) {
+        }
+    }
 
     private val scheduler: ScheduledExecutorService = Executors.newSingleThreadScheduledExecutor()
     private val connected = AtomicBoolean(false)
@@ -72,7 +90,13 @@ class WmsProtocol(private val listener: Listener) {
     fun connect() {
         closing.set(false)
         welcomeSeen.set(false)
-        val request = Request.Builder().url(WS_URL).build()
+        // Origin matches the browser client (the page at https://wms.pantum.com);
+        // the server may check it on the handshake. No cookies are needed:
+        // auth happens over the socket via METAOT08/WEBRFOT08.
+        val request = Request.Builder()
+            .url(WS_URL)
+            .header("Origin", "https://wms.pantum.com")
+            .build()
         socket = client.newWebSocket(request, SocketListener())
     }
 
@@ -215,14 +239,18 @@ class WmsProtocol(private val listener: Listener) {
         override fun onClosed(webSocket: WebSocket, code: Int, reason: String) {
             connected.set(false)
             welcomeSeen.set(false)
-            listener.onDisconnected()
+            listener.onDisconnected(if (reason.isNotEmpty()) "closed $code: $reason" else "closed $code")
             scheduleReconnect()
         }
 
         override fun onFailure(webSocket: WebSocket, t: Throwable, response: Response?) {
             connected.set(false)
             welcomeSeen.set(false)
-            listener.onDisconnected()
+            // Surface the real cause (e.g. TLS handshake / cert / timeout) so
+            // the user can report it instead of only seeing "reconnecting".
+            val detail = (t.message ?: t.javaClass.simpleName).take(200)
+            val http = response?.let { " (HTTP ${it.code})" } ?: ""
+            listener.onDisconnected("${t.javaClass.simpleName}: $detail$http")
             scheduleReconnect()
         }
     }

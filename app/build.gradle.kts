@@ -20,8 +20,8 @@ android {
         applicationId = "com.jiebao.wmsapp"
         minSdk = 21
         targetSdk = 34
-        versionCode = 2
-        versionName = "1.1-native"
+        versionCode = 3
+        versionName = "1.1.1-native"
     }
 
     if (hasReleaseKeystore) {
@@ -60,4 +60,9 @@ dependencies {
     // Native WMS transport: OkHttp WebSocket (wss://wms.pantum.com:443/wm_webrf).
     // OkHttp 4.12.0 supports minSdk 21.
     implementation("com.squareup.okhttp3:okhttp:4.12.0")
+    // Modern TLS for old Android (6.0, 32-bit): the platform TLS stack on
+    // API 23 cannot complete the handshake with this server, while the
+    // WebView (Chromium/BoringSSL) can. Conscrypt gives OkHttp a current
+    // TLS 1.2/1.3 stack with its own trust store. Supports armeabi-v7a.
+    implementation("org.conscrypt:conscrypt-android:2.5.2")
 }
