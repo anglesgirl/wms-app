@@ -64,7 +64,7 @@ class WmsProtocol(private val listener: Listener) {
         // this server's handshake while the WebView (Chromium) succeeds.
         // No-op if Conscrypt is already installed or unavailable.
         try {
-            if (Security.getProvider(Conscrypt.PROVIDER_NAME) == null) {
+            if (Security.getProvider("Conscrypt") == null) {
                 Security.insertProviderAt(Conscrypt.newProvider(), 1)
             }
         } catch (_: Throwable) {
