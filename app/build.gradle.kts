@@ -20,8 +20,8 @@ android {
         applicationId = "com.jiebao.wmsapp"
         minSdk = 21
         targetSdk = 34
-        versionCode = 1
-        versionName = "1.0"
+        versionCode = 2
+        versionName = "1.1-native"
     }
 
     if (hasReleaseKeystore) {
@@ -57,4 +57,7 @@ android {
 }
 
 dependencies {
+    // Native WMS transport: OkHttp WebSocket (wss://wms.pantum.com:443/wm_webrf).
+    // OkHttp 4.12.0 supports minSdk 21.
+    implementation("com.squareup.okhttp3:okhttp:4.12.0")
 }
