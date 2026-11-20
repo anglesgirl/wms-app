@@ -147,7 +147,14 @@ class WmsSession(context: Context, private val protocol: WmsProtocol) {
                         onResult(true, null)
                     }
                 }
-                else -> onResult(false, "登录返回异常")
+                else -> {
+                    // Surface the raw reply (or timeout) so the real cause
+                    // is visible instead of a generic "abnormal" message.
+                    // The reply carries no password, only user/session/token.
+                    val detail = if (raw.isEmpty()) "超时：60秒内服务器无响应"
+                    else "原样返回：${raw.take(200)}"
+                    onResult(false, "登录返回异常\n$detail")
+                }
             }
         }
     }
