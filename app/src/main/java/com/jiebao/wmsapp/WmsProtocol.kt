@@ -181,7 +181,19 @@ class WmsProtocol(private val listener: Listener) {
         synchronized(msgLock) {
             socket?.send("pda$packetId")
         }
-        val rest = if (comma >= 0) text.substring(comma + 1) else text
+        // The server URL-encodes the WHOLE payload after the packet id
+        // (verified against the real ws.log): "<reqId>%20<csv>" with every
+        // comma as %2C, e.g. "149711%201%2C190690%2C...". There is NO literal
+        // space or comma on the wire. Decode once here so routing (reqId
+        // before the first space) and parsing (CSV split on ',') see the
+        // same shape the framework hands to its handlers. Field values
+        // that were double-encoded (e.g. "No%2520Error" -> "No%20Error",
+        // token "%253D" -> "%3D") stay encoded for the per-field decode in
+        // WmsResponseParser. PONG ("<id> PONG") has no % sequences, so
+        // decoding it is a no-op. Without this decode, parseMsgId found no
+        // space, route() dropped every reply, and every EXEC timed out.
+        val rawRest = if (comma >= 0) text.substring(comma + 1) else text
+        val rest = WmsCodec.decode(rawRest)
         when {
             rest.startsWith("FRAGMENT") -> {
                 val idx = rest.indexOf(',')

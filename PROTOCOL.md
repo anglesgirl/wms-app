@@ -13,6 +13,15 @@
 - 客户端发消息格式：`<6位数字ID> <命令>`，ID 每次递增（例 811864）。
 - 收到服务端响应后**必须**回 `pda<响应ID>` 确认，否则服务端不再发包。
   例：收到 `9053590,811864 ...` 后发 `pda9053590`。
+- **响应整段 URL 编码（2026-11-20 实测，v1.1.3 超时根因）**：服务端回的
+  payload（逗号之后整段）是完整 encodeURIComponent 过的，
+  如 `9082453,149711%201%2C190690%2C999928%2C...`——请求 ID 与 CSV 之间
+  的空格是 `%20`、CSV 里的逗号是 `%2C`，线上没有任何字面空格/逗号。
+  客户端必须先对整段 decode 一次，才按“请求 ID + 空格 + CSV”切分；
+  再对每个字段单独 decode（双重编码的值如 `No%2520Error`→`No%20Error`、
+  token 尾的 `%253D`→`%3D`）。不 decode 就按字面空格切，parseMsgId
+  找不到空格、route 直接丢包，每次 EXEC 都 60 秒超时。PONG
+  （`<id> PONG`）不编码，是字面空格，不受影响。
 - 保活：发 `PING`，服务端回 `PONG`（消息体以 `PONG` 结尾）。
 
 ## 2. EXEC 调用
@@ -33,12 +42,19 @@
 
 ## 3. 登录
 
+入口：主页两个链接 WebWorkstation1（桌面）和 **WebRF1（PDA 用）**，
+WebRF1 = `https://wms.pantum.com/wm/sce/mobile-web-client/inforMetaClient.html?tenant=INFOR&lang=zh_CN`
+（2026-11-20 用户截图确认）。原生 App 走的就是 WebRF 这条
+（`wss://wms.pantum.com:443/wm_webrf` + METAOT08）。
+
 首次登录（用户输用户名+密码）：
 
 ```
-<ID> EXEC NSPRFMETAOT08  1,<用户ID>,<会话号>,,INFOR,OT,08,wms.pantum.com:443,zh-CN,<密码>,WEBRF,INFOR,
+<ID> EXEC NSPRFMETAOT08  1,<用户ID>,<会话号>,,INFOR,OT,08,wms.pantum.com:443,zh_CN,<密码>,WEBRF,INFOR,
 ```
 
+- locale 是 `zh_CN`（下划线），不是 `zh-CN`：框架从页面 URL 的
+  `lang=zh_CN` 取 usersLocale。v1.1.3 之前写成 `zh-CN` 是错的。
 - 成功后服务端给会话令牌（base64），App 保存，供重连用。
 - 重连（App 启动/断线后）：`EXEC NSPRFWEBRFOT08 ...`，参数里带令牌，
   不用再输密码。令牌失效（回 `NO SESSION`）则回登录屏。

@@ -124,7 +124,10 @@ class WmsSession(context: Context, private val protocol: WmsProtocol) {
         }
         userId = user.trim().lowercase()
         prefs.edit().putString(KEY_USER_ID, userId).apply()
-        val business = listOf("zh-CN", password, "WEBRF", TENANT)
+        // Locale must be "zh_CN" (underscore), not "zh-CN": the framework
+        // takes usersLocale from the page URL query param lang=zh_CN
+        // (inforMetaClient.html?tenant=INFOR&lang=zh_CN, the WebRF1 link).
+        val business = listOf("zh_CN", password, "WEBRF", TENANT)
         // Login EXEC has an empty warehouse: build the params manually.
         val savedWarehouse = warehouse
         warehouse = ""
