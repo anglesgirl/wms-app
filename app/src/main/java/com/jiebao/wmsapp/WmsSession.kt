@@ -99,6 +99,10 @@ class WmsSession(context: Context, private val protocol: WmsProtocol) {
         business: List<String>,
         onResponse: (WmsResponse) -> Unit
     ) {
+        if (!protocol.isConnected()) {
+            onResponse(WmsResponse.Error("未连接到服务器"))
+            return
+        }
         val params = buildParams(procName, appFlagOverride, business)
         protocol.send("EXEC $procName  $params") { raw ->
             onResponse(WmsResponseParser.parse(raw))
@@ -114,6 +118,10 @@ class WmsSession(context: Context, private val protocol: WmsProtocol) {
      * On success the token + warehouse are saved; [onResult] gets (ok, error?).
      */
     fun login(user: String, password: String, onResult: (Boolean, String?) -> Unit) {
+        if (!protocol.isConnected()) {
+            onResult(false, "未连接到服务器，请检查网络后重试")
+            return
+        }
         userId = user.trim().lowercase()
         prefs.edit().putString(KEY_USER_ID, userId).apply()
         val business = listOf("zh-CN", password, "WEBRF", TENANT)

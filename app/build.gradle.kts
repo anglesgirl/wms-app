@@ -20,8 +20,8 @@ android {
         applicationId = "com.jiebao.wmsapp"
         minSdk = 21
         targetSdk = 34
-        versionCode = 3
-        versionName = "1.1.1-native"
+        versionCode = 4
+        versionName = "1.1.2-native"
     }
 
     if (hasReleaseKeystore) {
