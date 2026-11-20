@@ -435,18 +435,14 @@ class MainActivity : Activity(), WmsProtocol.Listener {
                     (event != null && event.keyCode == KeyEvent.KEYCODE_ENTER &&
                         event.action == KeyEvent.ACTION_DOWN)
                 if (enter) {
-                    // NOXMIT screens never submit on Enter: the value must
-                    // stay in the field, Enter just moves to the next one
-                    // (the framework's AUTOENTER behaviour). Only a real
-                    // EXEC screen auto-submits on Enter.
-                    if (def.autoEnter && !def.noXmit) submitCurrent() else focusNextField(field)
+                    onFieldEnter(def, field)
                     true
                 } else false
             }
             // Scanner Enter key (hardware key event, not IME).
             setOnKeyListener { _, keyCode, event ->
                 if (keyCode == KeyEvent.KEYCODE_ENTER && event.action == KeyEvent.ACTION_DOWN) {
-                    if (def.autoEnter && !def.noXmit) submitCurrent() else focusNextField(field)
+                    onFieldEnter(def, field)
                     true
                 } else false
             }
@@ -465,6 +461,27 @@ class MainActivity : Activity(), WmsProtocol.Listener {
             })
             addView(view)
         }
+    }
+
+    /**
+     * Enter pressed in a SEND field.
+     * The value must stay in the field; Enter only moves forward. On a
+     * multi-field form Enter on any field but the last just goes to the
+     * next field — it must never submit the half-filled form (the old
+     * code submitted on every Enter, and the plain-ack path then cleared
+     * every input, so the typed value vanished on all screens). Only
+     * Enter on the last SEND field submits (single-field scan screens:
+     * the only field is the last, so scan+Enter still submits). Without
+     * AUTOENTER, Enter never submits — F1 does.
+     */
+    private fun onFieldEnter(def: ScreenDef, field: ScreenField) {
+        if (!def.autoEnter) {
+            focusNextField(field)
+            return
+        }
+        val sends = def.sendFields
+        val isLast = sends.lastOrNull()?.name == field.name
+        if (isLast) submitCurrent() else focusNextField(field)
     }
 
     private fun focusNextField(current: ScreenField) {
