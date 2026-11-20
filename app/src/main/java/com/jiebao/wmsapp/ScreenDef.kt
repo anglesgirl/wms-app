@@ -116,6 +116,16 @@ data class ScreenDef(
             ?.args?.getOrNull(0)?.takeIf { !it.contains("-") && it.isNotBlank() }
 
     /**
+     * SENDIF target when the condition is the constant (TRUE), e.g.
+     * SENDIF(RTXRECHECK1-X,1,(TRUE)) -> "RTXRECHECK1-X". The framework
+     * evaluates SENDIF on screen exit; only the constant-true form is
+     * handled here (other conditions need the expression engine).
+     */
+    val sendifTrueTarget: String?
+        get() = instructions.firstOrNull { it.func == "SENDIF" && it.args.size >= 3 && it.args[2].contains("TRUE", ignoreCase = true) }
+            ?.args?.getOrNull(0)?.takeIf { it.isNotBlank() }
+
+    /**
      * Effective EXEC proc for this screen.
      * - HEADER index 7 when present (NSPRFIQ01, NSPRFSND00, ...).
      * - Otherwise derived as "NSPRF" + screenName + "X" (STDPK11 -> NSPRFSTDPK11X).

@@ -435,14 +435,18 @@ class MainActivity : Activity(), WmsProtocol.Listener {
                     (event != null && event.keyCode == KeyEvent.KEYCODE_ENTER &&
                         event.action == KeyEvent.ACTION_DOWN)
                 if (enter) {
-                    if (def.autoEnter) submitCurrent() else focusNextField(field)
+                    // NOXMIT screens never submit on Enter: the value must
+                    // stay in the field, Enter just moves to the next one
+                    // (the framework's AUTOENTER behaviour). Only a real
+                    // EXEC screen auto-submits on Enter.
+                    if (def.autoEnter && !def.noXmit) submitCurrent() else focusNextField(field)
                     true
                 } else false
             }
             // Scanner Enter key (hardware key event, not IME).
             setOnKeyListener { _, keyCode, event ->
                 if (keyCode == KeyEvent.KEYCODE_ENTER && event.action == KeyEvent.ACTION_DOWN) {
-                    if (def.autoEnter) submitCurrent() else focusNextField(field)
+                    if (def.autoEnter && !def.noXmit) submitCurrent() else focusNextField(field)
                     true
                 } else false
             }
@@ -521,8 +525,17 @@ class MainActivity : Activity(), WmsProtocol.Listener {
             return
         }
         if (def.noXmit) {
-            // NOXMIT screen: no EXEC, just move on.
-            navigateAfterSubmit(def, null)
+            // NOXMIT screen: no EXEC is sent, and the values must stay —
+            // the framework never clears them on exit. Follow a
+            // SENDIF(..., (TRUE)) to its target screen (e.g. recheck ->
+            // RTXRECHECK1-X); otherwise stay on this screen with the
+            // values intact. Never route through navigateAfterSubmit,
+            // whose plain-ack branch clears every input.
+            val target = def.sendifTrueTarget
+            if (target != null) {
+                pushState()
+                showScreen(target)
+            }
             return
         }
         btnF1.isEnabled = false
