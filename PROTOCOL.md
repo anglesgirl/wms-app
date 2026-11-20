@@ -21,7 +21,9 @@
   再对每个字段单独 decode（双重编码的值如 `No%2520Error`→`No%20Error`、
   token 尾的 `%253D`→`%3D`）。不 decode 就按字面空格切，parseMsgId
   找不到空格、route 直接丢包，每次 EXEC 都 60 秒超时。PONG
-  （`<id> PONG`）不编码，是字面空格，不受影响。
+  （`<id> PONG`）不编码，是字面空格，不受影响。OT,03 屏定义已核实：
+  定义文本前的分隔符在线上是 `%0C`，一次 decode 后就是真正的 `\u000C`
+  字符（实测 18 个），parse 按 `\u000C` 切分正常，不用再处理。
 - 保活：发 `PING`，服务端回 `PONG`（消息体以 `PONG` 结尾）。
 
 ## 2. EXEC 调用
